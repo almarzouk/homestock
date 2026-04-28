@@ -20,14 +20,16 @@ function LoginForm() {
     error ? "E-Mail oder Passwort ist falsch." : null
   );
 
-  // Redirect to /setup if no users exist yet
+  // Redirect to /setup only when the API explicitly confirms no users exist
   useEffect(() => {
     fetch("/api/setup")
       .then((r) => r.json())
       .then((data) => {
-        if (!data.hasUsers) router.replace("/setup");
+        if (data.hasUsers === false) router.replace("/setup");
       })
-      .catch(() => {});
+      .catch(() => {
+        // On error (cold start, network issue) — stay on login page
+      });
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {

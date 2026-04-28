@@ -1,11 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Home, Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
 
 export default function SetupPage() {
   const router = useRouter();
+
+  // If users already exist, redirect to login immediately
+  useEffect(() => {
+    fetch("/api/setup")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.hasUsers === true) router.replace("/login");
+      })
+      .catch(() => {});
+  }, [router]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
