@@ -7,14 +7,14 @@ export async function POST() {
   try {
     await connectDB();
 
-    const email = "jumaa.almarzouk@gmail.com";
 
-    // Delete any existing admin to allow re-seeding
+    const email = "ju@gmail.com";
+    const password = "Pass321@";
+
+    // Delete any existing user with this email to allow re-seeding
     await User.deleteOne({ email });
-    // Also remove old typo version if it exists
-    await User.deleteOne({ email: "jumaa.almarzoul@gmail.com" });
 
-    const hashed = await bcrypt.hash("pass321@", 12);
+    const hashed = await bcrypt.hash(password, 12);
 
     const admin = await User.create({
       name: "Jumaa Al-Marzouk",
