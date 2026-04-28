@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Home, Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
@@ -19,6 +19,16 @@ function LoginForm() {
   const [loginError, setLoginError] = useState<string | null>(
     error ? "E-Mail oder Passwort ist falsch." : null
   );
+
+  // Redirect to /setup if no users exist yet
+  useEffect(() => {
+    fetch("/api/setup")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.hasUsers) router.replace("/setup");
+      })
+      .catch(() => {});
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

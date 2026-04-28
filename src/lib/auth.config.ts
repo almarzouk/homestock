@@ -11,10 +11,12 @@ export const authConfig: NextAuthConfig = {
       const isLoggedIn = !!auth?.user;
       const pathname = nextUrl.pathname;
 
-      // Always allow login page and auth API
+      // Always allow login page, setup page and auth API
       if (
         pathname.startsWith("/login") ||
+        pathname.startsWith("/setup") ||
         pathname.startsWith("/api/auth") ||
+        pathname.startsWith("/api/setup") ||
         pathname.startsWith("/api/seed") ||
         pathname.startsWith("/api/search")
       ) {
