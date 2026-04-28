@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import Product from "@/models/Product";
+import "@/models/Category"; // ensure Category schema is registered for populate
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LeanProduct = Record<string, any>;

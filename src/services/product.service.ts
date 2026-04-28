@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import Product, { IProductDocument } from "@/models/Product";
+import "@/models/Category"; // ensure Category schema is registered for populate
 import { ProductFormData } from "@/schemas/product.schema";
 
 interface GetProductsParams {
