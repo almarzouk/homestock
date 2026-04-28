@@ -9,9 +9,7 @@ export const ProductSchema = z.object({
   minQuantity: z.coerce.number().min(0, "Mindestbestand muss positiv sein"),
   expiryDate: z.string().optional().or(z.literal("")),
   image: z.string().url("Ungültige URL").optional().or(z.literal("")),
-  location: z
-    .enum(["kitchen", "freezer", "bathroom", "storage"])
-    .optional(),
+  location: z.string().max(100).optional().or(z.literal("")),
   notes: z.string().max(500).optional().or(z.literal("")),
 });
 

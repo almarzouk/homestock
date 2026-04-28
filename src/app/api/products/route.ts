@@ -8,9 +8,11 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get("search") || undefined;
     const categoryId = searchParams.get("categoryId") || undefined;
     const status = searchParams.get("status") as "good" | "low" | "out" | undefined;
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
 
-    const products = await getAllProducts({ search, categoryId, status });
-    return NextResponse.json(products);
+    const result = await getAllProducts({ search, categoryId, status, page, limit });
+    return NextResponse.json(result);
   } catch (error) {
     console.error("GET /api/products error:", error);
     return NextResponse.json({ error: "Serverfehler" }, { status: 500 });

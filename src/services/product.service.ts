@@ -7,13 +7,25 @@ interface GetProductsParams {
   search?: string;
   categoryId?: string;
   status?: "good" | "low" | "out";
+  page?: number;
+  limit?: number;
+}
+
+export interface ProductsPage {
+  products: IProductDocument[];
+  total: number;
+  page: number;
+  totalPages: number;
+  limit: number;
 }
 
 export async function getAllProducts(
   params: GetProductsParams = {}
-): Promise<IProductDocument[]> {
+): Promise<ProductsPage> {
   await connectDB();
 
+  const page = params.page ?? 1;
+  const limit = params.limit ?? 20;
   const query: Record<string, unknown> = {};
 
   if (params.search) {
@@ -27,21 +39,34 @@ export async function getAllProducts(
     query.categoryId = params.categoryId;
   }
 
-  const products = await Product.find(query)
-    .populate("categoryId", "name color")
-    .sort({ name: 1 })
-    .lean<IProductDocument[]>();
-
+  // If status filter: fetch all matching, filter, then paginate client-side
   if (params.status) {
-    return products.filter((p) => {
+    const all = await Product.find(query)
+      .populate("categoryId", "name color")
+      .sort({ name: 1 })
+      .lean<IProductDocument[]>();
+
+    const filtered = all.filter((p) => {
       if (params.status === "out") return p.quantity === 0;
       if (params.status === "low") return p.quantity > 0 && p.quantity <= p.minQuantity;
       if (params.status === "good") return p.quantity > p.minQuantity;
       return true;
     });
+
+    const total = filtered.length;
+    const products = filtered.slice((page - 1) * limit, page * limit);
+    return { products, total, page, totalPages: Math.max(1, Math.ceil(total / limit)), limit };
   }
 
-  return products;
+  const total = await Product.countDocuments(query);
+  const products = await Product.find(query)
+    .populate("categoryId", "name color")
+    .sort({ name: 1 })
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .lean<IProductDocument[]>();
+
+  return { products, total, page, totalPages: Math.max(1, Math.ceil(total / limit)), limit };
 }
 
 export async function getProductById(id: string): Promise<IProductDocument | null> {

@@ -22,8 +22,9 @@ export interface IProduct {
   minQuantity: number;
   expiryDate?: string;
   image?: string;
-  location?: Location;
+  location?: string;
   notes?: string;
+  inShoppingList?: boolean | null;
   createdAt: string;
   updatedAt: string;
 }

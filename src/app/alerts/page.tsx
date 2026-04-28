@@ -124,7 +124,7 @@ function AlertSection({
                 <p className="font-medium text-gray-900 truncate">{product.name}</p>
                 <p className="text-xs text-gray-400">
                   {category?.name ?? ""}{" "}
-                  {product.location ? `· ${t(`location.${product.location}`)}` : ""}
+                  {product.location ? `· ${product.location}` : ""}
                 </p>
               </div>
               <div className="text-right">

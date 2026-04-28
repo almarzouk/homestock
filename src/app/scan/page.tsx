@@ -193,7 +193,7 @@ export default function ScanPage() {
                     <img
                       src={fullProduct.image}
                       alt={fullProduct.name}
-                      className="w-16 h-16 object-cover rounded-xl bg-gray-100 flex-shrink-0"
+                      className="w-20 h-20 object-contain rounded-xl bg-gray-50 border border-gray-100 p-1 flex-shrink-0"
                       onError={(e) =>
                         ((e.target as HTMLImageElement).style.display = "none")
                       }
@@ -296,7 +296,7 @@ export default function ScanPage() {
                   {fullProduct.location && (
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <MapPin className="h-4 w-4 text-gray-300" />
-                      {t(`location.${fullProduct.location}`)}
+                      {fullProduct.location}
                     </div>
                   )}
                   {fullProduct.expiryDate && (
@@ -385,7 +385,7 @@ export default function ScanPage() {
                     <img
                       src={result.product.image}
                       alt={result.product.name}
-                      className="mt-2 w-16 h-16 object-cover rounded-xl"
+                      className="mt-2 w-20 h-20 object-contain rounded-xl bg-gray-50 border border-gray-100 p-1"
                       onError={(e) =>
                         ((e.target as HTMLImageElement).style.display = "none")
                       }

@@ -5,9 +5,10 @@ import { MovementSchema } from "@/schemas/product.schema";
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
-    const movements = await getAllMovements(limit);
-    return NextResponse.json(movements);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
+    const result = await getAllMovements({ page, limit });
+    return NextResponse.json(result);
   } catch (error) {
     console.error("GET /api/movements error:", error);
     return NextResponse.json({ error: "Serverfehler" }, { status: 500 });

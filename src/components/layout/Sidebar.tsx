@@ -14,12 +14,13 @@ import {
 } from "lucide-react";
 import { t } from "@/i18n";
 import UserMenu from "./UserMenu";
+import { useAlertCount } from "@/hooks/useAlertCount";
 
 const navItems = [
   { href: "/", icon: LayoutDashboard, labelKey: "nav.dashboard" },
   { href: "/inventory", icon: Package, labelKey: "nav.inventory" },
   { href: "/scan", icon: ScanLine, labelKey: "nav.scan" },
-  { href: "/alerts", icon: Bell, labelKey: "nav.alerts" },
+  { href: "/alerts", icon: Bell, labelKey: "nav.alerts", badge: true },
   { href: "/movements", icon: TrendingUp, labelKey: "nav.movements" },
   { href: "/shopping-list", icon: ShoppingCart, labelKey: "nav.shoppingList" },
   { href: "/settings", icon: Settings, labelKey: "nav.settings" },
@@ -27,6 +28,7 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const alertCount = useAlertCount();
 
   return (
     <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 min-h-screen">
@@ -41,11 +43,10 @@ export default function Sidebar() {
 
       <nav className="flex-1 px-3 py-4">
         <ul className="space-y-1">
-          {navItems.map(({ href, icon: Icon, labelKey }) => {
+          {navItems.map(({ href, icon: Icon, labelKey, badge }) => {
             const isActive =
-              href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(href);
+              href === "/" ? pathname === "/" : pathname.startsWith(href);
+            const showBadge = badge && alertCount > 0;
 
             return (
               <li key={href}>
@@ -57,7 +58,14 @@ export default function Sidebar() {
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                     }`}
                 >
-                  <Icon className={`h-5 w-5 flex-shrink-0 ${isActive ? "text-blue-600" : "text-gray-400"}`} />
+                  <div className="relative flex-shrink-0">
+                    <Icon className={`h-5 w-5 ${isActive ? "text-blue-600" : "text-gray-400"}`} />
+                    {showBadge && (
+                      <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[16px] h-4 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full leading-none">
+                        {alertCount > 99 ? "99+" : alertCount}
+                      </span>
+                    )}
+                  </div>
                   {t(labelKey)}
                 </Link>
               </li>

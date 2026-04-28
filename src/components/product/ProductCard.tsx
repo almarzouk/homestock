@@ -24,13 +24,13 @@ export default function ProductCard({ product }: ProductCardProps) {
             <img
               src={product.image}
               alt={product.name}
-              className="w-14 h-14 object-cover rounded-lg flex-shrink-0 bg-gray-100"
+              className="w-16 h-16 object-contain rounded-lg flex-shrink-0 bg-gray-50 border border-gray-100 p-0.5"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = "none";
               }}
             />
           ) : (
-            <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-16 h-16 bg-gray-50 border border-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <Package className="h-7 w-7 text-gray-300" />
             </div>
           )}
@@ -58,7 +58,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               {product.location && (
                 <span className="flex items-center gap-1 text-xs text-gray-400">
                   <MapPin className="h-3 w-3" />
-                  {t(`location.${product.location}`)}
+                  {product.location}
                 </span>
               )}
               {product.expiryDate && (

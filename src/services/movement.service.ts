@@ -50,13 +50,29 @@ export async function createMovement(
   return movement.save();
 }
 
-export async function getAllMovements(limit = 50): Promise<IMovementDocument[]> {
+export interface MovementsPage {
+  movements: IMovementDocument[];
+  total: number;
+  page: number;
+  totalPages: number;
+  limit: number;
+}
+
+export async function getAllMovements(
+  params: { page?: number; limit?: number } = {}
+): Promise<MovementsPage> {
   await connectDB();
-  return Movement.find()
-    .populate("productId", "name unit")
+  const page = params.page ?? 1;
+  const limit = params.limit ?? 20;
+  const total = await Movement.countDocuments();
+  const movements = await Movement.find()
+    .populate("productId", "name unit image")
     .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
     .limit(limit)
     .lean<IMovementDocument[]>();
+
+  return { movements, total, page, totalPages: Math.max(1, Math.ceil(total / limit)), limit };
 }
 
 export async function getMovementsByProduct(

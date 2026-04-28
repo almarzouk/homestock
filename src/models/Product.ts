@@ -9,8 +9,10 @@ export interface IProductDocument extends Document {
   minQuantity: number;
   expiryDate?: Date;
   image?: string;
-  location?: "kitchen" | "freezer" | "bathroom" | "storage";
+  location?: string;
   notes?: string;
+  /** null/undefined = auto (follow stock rules), true = manually added, false = manually dismissed */
+  inShoppingList?: boolean | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,11 +32,9 @@ const ProductSchema = new Schema<IProductDocument>(
     minQuantity: { type: Number, required: true, min: 0, default: 1 },
     expiryDate: { type: Date },
     image: { type: String, trim: true },
-    location: {
-      type: String,
-      enum: ["kitchen", "freezer", "bathroom", "storage"],
-    },
+    location: { type: String, trim: true },
     notes: { type: String, trim: true },
+    inShoppingList: { type: Boolean, default: null },
   },
   { timestamps: true }
 );
