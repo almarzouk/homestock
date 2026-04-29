@@ -9,21 +9,89 @@ import {
   Clock,
   TrendingUp,
   ArrowRight,
+  ScanBarcode,
+  Bell,
+  ShoppingCart,
+  Plus,
+  ArrowUpRight,
+  ArrowDownRight,
+  RefreshCcw,
 } from "lucide-react";
-import { StatCard } from "@/components/ui/Card";
 import { PageLoader } from "@/components/ui/LoadingSpinner";
-import { MovementTypeBadge } from "@/components/ui/Badge";
 import { t } from "@/i18n";
 import { DashboardStats, IMovement, IProduct } from "@/types";
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("de-DE", {
     day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
+    month: "short",
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+const STAT_CONFIG = [
+  {
+    key: "totalProducts" as const,
+    label: "Produkte",
+    icon: Package,
+    gradient: "from-blue-500 to-blue-600",
+    bg: "bg-blue-50",
+    text: "text-blue-600",
+    ring: "ring-blue-200",
+  },
+  {
+    key: "lowStockCount" as const,
+    label: "Niedriger Bestand",
+    icon: TrendingDown,
+    gradient: "from-amber-400 to-orange-500",
+    bg: "bg-amber-50",
+    text: "text-amber-600",
+    ring: "ring-amber-200",
+  },
+  {
+    key: "expiredCount" as const,
+    label: "Abgelaufen",
+    icon: AlertTriangle,
+    gradient: "from-red-500 to-rose-600",
+    bg: "bg-red-50",
+    text: "text-red-600",
+    ring: "ring-red-200",
+  },
+  {
+    key: "expiringSoonCount" as const,
+    label: "Läuft bald ab",
+    icon: Clock,
+    gradient: "from-orange-400 to-amber-500",
+    bg: "bg-orange-50",
+    text: "text-orange-600",
+    ring: "ring-orange-200",
+  },
+];
+
+const QUICK_ACTIONS = [
+  { href: "/inventory/new", label: "Produkt hinzufügen", icon: Plus, gradient: "from-blue-500 to-blue-600", desc: "Neues Produkt" },
+  { href: "/scan", label: "Barcode scannen", icon: ScanBarcode, gradient: "from-emerald-500 to-teal-600", desc: "Scannen" },
+  { href: "/alerts", label: "Warnungen", icon: Bell, gradient: "from-amber-400 to-orange-500", desc: "Benachrichtigungen" },
+  { href: "/shopping-list", label: "Einkaufsliste", icon: ShoppingCart, gradient: "from-purple-500 to-violet-600", desc: "Einkaufen" },
+];
+
+function MovementIcon({ type }: { type: string }) {
+  if (type === "IN") return (
+    <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+      <ArrowUpRight className="h-4 w-4 text-emerald-600" />
+    </div>
+  );
+  if (type === "OUT") return (
+    <div className="w-8 h-8 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+      <ArrowDownRight className="h-4 w-4 text-red-600" />
+    </div>
+  );
+  return (
+    <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+      <RefreshCcw className="h-4 w-4 text-blue-600" />
+    </div>
+  );
 }
 
 export default function DashboardPage() {
@@ -32,114 +100,126 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await fetch("/api/dashboard");
-        if (!res.ok) throw new Error("Fehler beim Laden");
-        const data = await res.json();
-        setStats(data);
-      } catch {
-        setError(t("common.serverError"));
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
+    fetch("/api/dashboard")
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(setStats)
+      .catch(() => setError(t("common.serverError")))
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <PageLoader />;
 
-  if (error) {
-    return (
-      <div className="text-center py-12 text-red-500">{error}</div>
-    );
-  }
+  if (error) return <div className="text-center py-12 text-red-500">{error}</div>;
+
+  const today = new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" });
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{t("dashboard.title")}</h1>
-        <p className="text-sm text-gray-500 mt-1">{t("app.tagline")}</p>
+    <div className="space-y-6">
+
+      {/* Header */}
+      <div>
+        <p className="text-xs font-semibold text-blue-500 uppercase tracking-widest mb-0.5">{today}</p>
+        <h1 className="text-2xl font-extrabold text-gray-900">{t("dashboard.title")}</h1>
+        <p className="text-sm text-gray-400 mt-0.5">{t("app.tagline")}</p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard
-          title={t("dashboard.totalProducts")}
-          value={stats?.totalProducts ?? 0}
-          icon={<Package className="h-6 w-6" />}
-          color="blue"
-        />
-        <StatCard
-          title={t("dashboard.lowStock")}
-          value={stats?.lowStockCount ?? 0}
-          icon={<TrendingDown className="h-6 w-6" />}
-          color="amber"
-        />
-        <StatCard
-          title={t("dashboard.expiredProducts")}
-          value={stats?.expiredCount ?? 0}
-          icon={<AlertTriangle className="h-6 w-6" />}
-          color="red"
-        />
-        <StatCard
-          title={t("dashboard.expiringSoon")}
-          value={stats?.expiringSoonCount ?? 0}
-          icon={<Clock className="h-6 w-6" />}
-          color="orange"
-        />
+      {/* Stats — 2 cols on mobile, 4 on desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {STAT_CONFIG.map(({ key, label, icon: Icon, gradient, bg, text, ring }) => {
+          const val = stats?.[key] ?? 0;
+          const isWarning = val > 0 && key !== "totalProducts";
+          return (
+            <div key={key}
+              className={`relative overflow-hidden rounded-2xl p-4 bg-white border shadow-sm transition-all ${isWarning ? `ring-2 ${ring}` : "border-gray-200"}`}>
+              {/* Background accent */}
+              {isWarning && (
+                <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-[0.06] pointer-events-none`} />
+              )}
+              <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-3`}>
+                <Icon className={`h-5 w-5 ${text}`} />
+              </div>
+              <p className={`text-3xl font-black ${isWarning ? text : "text-gray-900"}`}>{val}</p>
+              <p className="text-xs text-gray-400 font-medium mt-0.5 leading-tight">{label}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Schnellzugriff</h2>
+        <div className="grid grid-cols-2 gap-3">
+          {QUICK_ACTIONS.map(({ href, label, icon: Icon, gradient, desc }) => (
+            <Link key={href} href={href}
+              className={`relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br ${gradient} text-white shadow-sm active:scale-95 transition-transform`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Icon className="h-5 w-5 text-white" />
+                </div>
+                <ArrowRight className="h-4 w-4 text-white/60" />
+              </div>
+              <p className="text-xs text-white/70 font-medium">{desc}</p>
+              <p className="text-sm font-bold text-white leading-tight">{label}</p>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Recent Movements */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-gray-400" />
-            <h2 className="font-semibold text-gray-900">
-              {t("dashboard.recentMovements")}
-            </h2>
+            <div className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center">
+              <TrendingUp className="h-4 w-4 text-gray-500" />
+            </div>
+            <h2 className="font-bold text-gray-900 text-sm">{t("dashboard.recentMovements")}</h2>
           </div>
-          <Link
-            href="/movements"
-            className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 font-medium"
-          >
-            {t("dashboard.viewAll")}
-            <ArrowRight className="h-4 w-4" />
+          <Link href="/movements"
+            className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
+            {t("dashboard.viewAll")} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
         {!stats?.recentMovements?.length ? (
-          <div className="py-12 text-center text-gray-400">
-            <TrendingUp className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-            <p className="text-sm">{t("dashboard.noMovements")}</p>
+          <div className="py-10 text-center">
+            <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <TrendingUp className="h-6 w-6 text-gray-200" />
+            </div>
+            <p className="text-sm text-gray-400">{t("dashboard.noMovements")}</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-50">
             {stats.recentMovements.map((movement: IMovement) => {
               const product = movement.productId as IProduct;
+              const delta = movement.newQuantity - movement.previousQuantity;
               return (
-                <div
-                  key={movement._id}
-                  className="flex items-center gap-4 px-6 py-3"
-                >
-                  <MovementTypeBadge type={movement.type} />
+                <div key={movement._id} className="flex items-center gap-3 px-5 py-3">
+                  <MovementIcon type={movement.type} />
+
+                  {/* Product image */}
+                  {product?.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={product.image} alt={product.name}
+                      className="w-9 h-9 rounded-xl object-contain bg-gray-50 border border-gray-100 p-0.5 flex-shrink-0"
+                      onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
+                  ) : (
+                    <div className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
+                      <Package className="h-4 w-4 text-gray-200" />
+                    </div>
+                  )}
+
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {typeof product === "object" ? product.name : "-"}
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {typeof product === "object" ? product.name : "—"}
                     </p>
-                    <p className="text-xs text-gray-400">
-                      {formatDate(movement.createdAt)}
-                    </p>
+                    <p className="text-xs text-gray-400">{formatDate(movement.createdAt)}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-gray-700">
-                      {movement.previousQuantity} → {movement.newQuantity}
+
+                  <div className="text-right flex-shrink-0">
+                    <p className={`text-sm font-bold tabular-nums ${delta > 0 ? "text-emerald-600" : delta < 0 ? "text-red-500" : "text-blue-500"}`}>
+                      {delta > 0 ? "+" : ""}{delta}
                     </p>
-                    {movement.note && (
-                      <p className="text-xs text-gray-400 truncate max-w-[120px]">
-                        {movement.note}
-                      </p>
-                    )}
+                    <p className="text-xs text-gray-400">{movement.newQuantity} gesamt</p>
                   </div>
                 </div>
               );
@@ -148,23 +228,20 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Quick Actions */}
-      <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { href: "/inventory/new", label: t("product.add"), color: "bg-blue-600 hover:bg-blue-700 text-white" },
-          { href: "/scan", label: t("scanner.title"), color: "bg-emerald-600 hover:bg-emerald-700 text-white" },
-          { href: "/alerts", label: t("alerts.title"), color: "bg-amber-500 hover:bg-amber-600 text-white" },
-          { href: "/shopping-list", label: t("shoppingList.title"), color: "bg-purple-600 hover:bg-purple-700 text-white" },
-        ].map(({ href, label, color }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`${color} px-4 py-3 rounded-xl text-sm font-medium text-center transition-colors`}
-          >
-            {label}
-          </Link>
-        ))}
-      </div>
+      {/* Low stock preview */}
+      {(stats?.lowStockCount ?? 0) > 0 && (
+        <Link href="/alerts"
+          className="flex items-center gap-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 active:scale-95 transition-transform">
+          <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="h-5 w-5 text-amber-600" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-amber-800">{stats?.lowStockCount} Artikel mit niedrigem Bestand</p>
+            <p className="text-xs text-amber-600">Jetzt Einkaufsliste prüfen</p>
+          </div>
+          <ArrowRight className="h-5 w-5 text-amber-400 flex-shrink-0" />
+        </Link>
+      )}
     </div>
   );
 }

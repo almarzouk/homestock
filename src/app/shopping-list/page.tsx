@@ -184,42 +184,47 @@ export default function ShoppingListPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Header
-        title={t("shoppingList.title")}
-        subtitle={totalCount > 0 ? `${totalCount} Artikel · ${doneCount} erledigt` : undefined}
-        actions={
-          <button onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm">
-            <PenLine className="h-4 w-4" />
-            Manuell
-          </button>
-        }
-      />
-
-      {/* Progress bar (when there are items) */}
-      {totalCount > 0 && (
-        <div className="mb-5 bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5 text-blue-500" />
-              <span className="text-sm font-semibold text-gray-700">Einkaufsfortschritt</span>
-            </div>
-            <span className="text-sm font-bold text-blue-600">{doneCount}/{totalCount}</span>
-          </div>
-          <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500"
-              style={{ width: totalCount > 0 ? `${(doneCount / totalCount) * 100}%` : "0%" }} />
-          </div>
-          {doneCount === totalCount && totalCount > 0 && (
-            <div className="mt-2 flex items-center gap-1.5 text-emerald-600 text-xs font-semibold">
-              <CheckCircle className="h-3.5 w-3.5" /> Alles erledigt! 🎉
-            </div>
+      {/* Page header */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h1 className="text-2xl font-extrabold text-gray-900">{t("shoppingList.title")}</h1>
+          {totalCount > 0 && (
+            <p className="text-xs text-gray-400 mt-0.5">{totalCount} Artikel · {doneCount} erledigt</p>
           )}
+        </div>
+        <button onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-2xl text-sm font-bold transition-all shadow-sm">
+          <PenLine className="h-4 w-4" />
+          <span className="hidden sm:inline">Manuell</span>
+          <Plus className="h-4 w-4 sm:hidden" />
+        </button>
+      </div>
+
+      {/* Progress card */}
+      {totalCount > 0 && (
+        <div className={`mb-5 rounded-2xl p-4 shadow-sm border ${doneCount === totalCount ? "bg-gradient-to-r from-emerald-500 to-teal-500 border-emerald-400" : "bg-white border-gray-200"}`}>
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2">
+              {doneCount === totalCount
+                ? <CheckCircle className="h-5 w-5 text-white" />
+                : <ShoppingBag className="h-5 w-5 text-blue-500" />}
+              <span className={`text-sm font-bold ${doneCount === totalCount ? "text-white" : "text-gray-700"}`}>
+                {doneCount === totalCount ? "Alles erledigt! 🎉" : "Einkaufsfortschritt"}
+              </span>
+            </div>
+            <span className={`text-sm font-black tabular-nums ${doneCount === totalCount ? "text-white/80" : "text-blue-600"}`}>
+              {doneCount}/{totalCount}
+            </span>
+          </div>
+          <div className={`h-2 rounded-full overflow-hidden ${doneCount === totalCount ? "bg-white/20" : "bg-gray-100"}`}>
+            <div className={`h-full rounded-full transition-all duration-700 ${doneCount === totalCount ? "bg-white" : "bg-gradient-to-r from-blue-500 to-emerald-500"}`}
+              style={{ width: `${(doneCount / totalCount) * 100}%` }} />
+          </div>
         </div>
       )}
 
       {/* Search */}
-      <div ref={searchRef} className="relative mb-6">
+      <div ref={searchRef} className="relative mb-5">
         <div className={`flex items-center gap-3 bg-white border-2 rounded-2xl px-4 py-3 shadow-sm transition-all ${showResults || query ? "border-blue-400 ring-2 ring-blue-100" : "border-gray-200"}`}>
           {searching ? <Loader2 className="h-5 w-5 text-blue-400 animate-spin flex-shrink-0" />
             : <Search className="h-5 w-5 text-gray-400 flex-shrink-0" />}
@@ -324,29 +329,37 @@ export default function ShoppingListPage() {
       {/* List */}
       {listLoading ? <PageLoader /> : items.length === 0 ? (
         <div className="flex flex-col items-center py-16 text-center">
-          <div className="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mb-4">
-            <ShoppingCart className="h-10 w-10 text-blue-300" />
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl flex items-center justify-center mb-5">
+            <ShoppingCart className="h-12 w-12 text-blue-200" />
           </div>
-          <h3 className="text-lg font-bold text-gray-700 mb-1">Einkaufsliste ist leer</h3>
-          <p className="text-sm text-gray-400 max-w-xs">Suchen Sie oben nach Produkten oder fügen Sie Artikel zum Lager hinzu — sobald der Bestand niedrig ist, erscheinen sie hier automatisch.</p>
+          <h3 className="text-lg font-bold text-gray-700 mb-2">Einkaufsliste ist leer</h3>
+          <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
+            Suchen Sie oben nach Produkten oder fügen Sie Artikel hinzu — niedrige Bestände erscheinen automatisch.
+          </p>
+          <button onClick={() => setShowManualModal(true)}
+            className="mt-5 flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-2xl text-sm font-bold shadow-sm">
+            <Plus className="h-4 w-4" /> Produkt hinzufügen
+          </button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* Out of stock section */}
           {outOfStock.length > 0 && (
             <section>
-              <div className="flex items-center gap-2 mb-2 px-1">
-                <div className="w-2 h-2 rounded-full bg-red-500" />
-                <h2 className="text-xs font-bold text-red-600 uppercase tracking-wider">Nicht vorrätig ({outOfStock.length})</h2>
-              </div>
-              <div className="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
-                <div className="divide-y divide-gray-50">
-                  {outOfStock.map(({ product, needed, manual }) => (
-                    <ShoppingItem key={product._id} product={product} needed={needed} manual={manual}
-                      checked={checked.has(product._id)} onToggle={() => toggleCheck(product._id)}
-                      onRemove={() => removeItem(product._id)} />
-                  ))}
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-6 h-6 rounded-lg bg-red-100 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-red-500" />
                 </div>
+                <h2 className="text-xs font-black text-red-600 uppercase tracking-wider">Nicht vorrätig</h2>
+                <span className="ml-auto text-xs font-bold text-red-500 bg-red-100 px-2 py-0.5 rounded-full">{outOfStock.length}</span>
+              </div>
+              <div className="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden divide-y divide-red-50">
+                {outOfStock.map(({ product, needed, manual }) => (
+                  <ShoppingItem key={product._id} product={product} needed={needed} manual={manual}
+                    accent="red"
+                    checked={checked.has(product._id)} onToggle={() => toggleCheck(product._id)}
+                    onRemove={() => removeItem(product._id)} />
+                ))}
               </div>
             </section>
           )}
@@ -354,18 +367,20 @@ export default function ShoppingListPage() {
           {/* Low stock section */}
           {lowStock.length > 0 && (
             <section>
-              <div className="flex items-center gap-2 mb-2 px-1">
-                <div className="w-2 h-2 rounded-full bg-amber-500" />
-                <h2 className="text-xs font-bold text-amber-600 uppercase tracking-wider">Niedriger Bestand ({lowStock.length})</h2>
-              </div>
-              <div className="bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
-                <div className="divide-y divide-gray-50">
-                  {lowStock.map(({ product, needed, manual }) => (
-                    <ShoppingItem key={product._id} product={product} needed={needed} manual={manual}
-                      checked={checked.has(product._id)} onToggle={() => toggleCheck(product._id)}
-                      onRemove={() => removeItem(product._id)} />
-                  ))}
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-amber-500" />
                 </div>
+                <h2 className="text-xs font-black text-amber-600 uppercase tracking-wider">Niedriger Bestand</h2>
+                <span className="ml-auto text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">{lowStock.length}</span>
+              </div>
+              <div className="bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden divide-y divide-amber-50">
+                {lowStock.map(({ product, needed, manual }) => (
+                  <ShoppingItem key={product._id} product={product} needed={needed} manual={manual}
+                    accent="amber"
+                    checked={checked.has(product._id)} onToggle={() => toggleCheck(product._id)}
+                    onRemove={() => removeItem(product._id)} />
+                ))}
               </div>
             </section>
           )}
@@ -373,18 +388,20 @@ export default function ShoppingListPage() {
           {/* Manually added (sufficient stock) */}
           {manualItems.length > 0 && (
             <section>
-              <div className="flex items-center gap-2 mb-2 px-1">
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <h2 className="text-xs font-bold text-blue-600 uppercase tracking-wider">Manuell hinzugefügt ({manualItems.length})</h2>
-              </div>
-              <div className="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden">
-                <div className="divide-y divide-gray-50">
-                  {manualItems.map(({ product, needed, manual }) => (
-                    <ShoppingItem key={product._id} product={product} needed={needed} manual={manual}
-                      checked={checked.has(product._id)} onToggle={() => toggleCheck(product._id)}
-                      onRemove={() => removeItem(product._id)} />
-                  ))}
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-blue-500" />
                 </div>
+                <h2 className="text-xs font-black text-blue-600 uppercase tracking-wider">Manuell hinzugefügt</h2>
+                <span className="ml-auto text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">{manualItems.length}</span>
+              </div>
+              <div className="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden divide-y divide-blue-50">
+                {manualItems.map(({ product, needed, manual }) => (
+                  <ShoppingItem key={product._id} product={product} needed={needed} manual={manual}
+                    accent="blue"
+                    checked={checked.has(product._id)} onToggle={() => toggleCheck(product._id)}
+                    onRemove={() => removeItem(product._id)} />
+                ))}
               </div>
             </section>
           )}
@@ -477,27 +494,33 @@ export default function ShoppingListPage() {
   );
 }
 
-function ShoppingItem({ product, needed, manual, checked, onToggle, onRemove }: {
-  product: IProduct; needed: number; manual: boolean;
+function ShoppingItem({ product, needed, manual, accent = "amber", checked, onToggle, onRemove }: {
+  product: IProduct; needed: number; manual: boolean; accent?: "red" | "amber" | "blue";
   checked: boolean; onToggle: () => void; onRemove: () => void;
 }) {
   const category = typeof product.categoryId === "object" ? product.categoryId : null;
   const isOut = product.quantity === 0;
+  const accentColors = {
+    red:   { pill: "bg-red-100 text-red-700",   qty: "text-red-600",   bar: "bg-red-400",   needed: "bg-red-50 text-red-600" },
+    amber: { pill: "bg-amber-100 text-amber-700", qty: "text-amber-600", bar: "bg-amber-400", needed: "bg-amber-50 text-amber-700" },
+    blue:  { pill: "bg-blue-100 text-blue-700",  qty: "text-blue-600",  bar: "bg-blue-400",  needed: "bg-blue-50 text-blue-600" },
+  };
+  const ac = accentColors[accent];
 
   return (
-    <div className={`flex items-center gap-3 px-4 py-3.5 transition-all ${checked ? "opacity-50" : ""}`}>
+    <div className={`flex items-center gap-3 px-4 py-3.5 transition-all duration-200 ${checked ? "opacity-40" : ""}`}>
       {/* Checkbox */}
-      <button onClick={onToggle} className="flex-shrink-0">
+      <button onClick={onToggle} className="flex-shrink-0 active:scale-90 transition-transform">
         {checked
           ? <CheckSquare className="h-5 w-5 text-emerald-500" />
-          : <Square className="h-5 w-5 text-gray-300 hover:text-gray-400" />}
+          : <Square className="h-5 w-5 text-gray-300" />}
       </button>
 
       {/* Image */}
       {product.image ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={product.image} alt={product.name}
-          className={`w-14 h-14 object-contain rounded-xl flex-shrink-0 bg-gray-50 border border-gray-100 p-0.5 transition-all ${checked ? "grayscale" : ""}`}
+          className={`w-14 h-14 object-contain rounded-xl flex-shrink-0 bg-gray-50 border border-gray-100 p-0.5 ${checked ? "grayscale" : ""}`}
           onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
       ) : (
         <div className="w-14 h-14 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -507,35 +530,39 @@ function ShoppingItem({ product, needed, manual, checked, onToggle, onRemove }: 
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className={`font-semibold text-gray-900 truncate ${checked ? "line-through" : ""}`}>{product.name}</p>
-          {manual && (
-            <span className="flex-shrink-0 text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-semibold">manuell</span>
-          )}
+        <p className={`font-bold text-gray-900 truncate text-sm ${checked ? "line-through text-gray-400" : ""}`}>
+          {product.name}
+        </p>
+        <div className="flex items-center gap-2 mt-0.5">
+          {category && <span className="text-[11px] text-gray-400">{category.name}</span>}
+          {manual && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${ac.pill}`}>manuell</span>}
         </div>
-        {category && <p className="text-xs text-gray-400">{category.name}</p>}
-        <div className="mt-1 flex items-center gap-2">
-          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden max-w-[80px]">
-            <div className={`h-full rounded-full ${isOut ? "bg-red-400" : "bg-amber-400"}`}
+        <div className="mt-1.5 flex items-center gap-2">
+          <div className="w-16 h-1 bg-gray-100 rounded-full overflow-hidden flex-shrink-0">
+            <div className={`h-full rounded-full ${ac.bar}`}
               style={{ width: isOut ? "3px" : `${Math.min((product.quantity / product.minQuantity) * 100, 100)}%` }} />
           </div>
-          <span className={`text-xs font-medium ${isOut ? "text-red-500" : "text-amber-600"}`}>
-            {product.quantity} / {product.minQuantity} {t(`unit.${product.unit}`)}
+          <span className={`text-[11px] font-semibold tabular-nums ${ac.qty}`}>
+            {product.quantity}/{product.minQuantity} {t(`unit.${product.unit}`)}
           </span>
         </div>
       </div>
 
       {/* Right side */}
-      <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg ${isOut ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"}`}>
-          {needed}
+      <div className="flex-shrink-0 flex flex-col items-center gap-2">
+        {/* How many to buy */}
+        <div className={`w-11 h-11 rounded-2xl flex flex-col items-center justify-center ${ac.needed}`}>
+          <span className="text-base font-black leading-none">{needed}</span>
+          <span className="text-[9px] font-semibold opacity-60 leading-none">kaufen</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Link href={`/inventory/${product._id}`} className="text-gray-300 hover:text-blue-500 transition-colors">
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <Link href={`/inventory/${product._id}`}
+            className="text-gray-300 hover:text-blue-500 transition-colors active:scale-90">
             <ExternalLink className="h-3.5 w-3.5" />
           </Link>
           <button onClick={onRemove} title="Aus Liste entfernen"
-            className="text-gray-300 hover:text-red-500 transition-colors">
+            className="text-gray-300 hover:text-red-500 transition-colors active:scale-90">
             <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>

@@ -7,7 +7,6 @@ import {
   MapPin, ArrowUpDown, X, ShoppingCart,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
-import ProductCard from "@/components/product/ProductCard";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
 import EmptyState from "@/components/ui/EmptyState";
@@ -200,149 +199,202 @@ export default function InventoryPage() {
         <>
           {/* ── Desktop table ── */}
           <div className="hidden md:block bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("product.name")}</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("product.category")}</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> Lagerort</div>
-                  </th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("product.quantity")}</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("product.expiryDate")}</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aktionen</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {displayed.map((product) => {
-                  const category = typeof product.categoryId === "object" ? product.categoryId : null;
-                  const qty = product.quantity;
-                  const stockColor = qty === 0 ? "text-red-600 font-bold" : qty <= product.minQuantity ? "text-amber-600 font-semibold" : "text-gray-900";
-                  const locIcon = locations.find((l) => l.name === product.location)?.icon;
+            {/* overflow-x-auto ensures the table scrolls rather than cutting off */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[680px]">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("product.name")}</th>
+                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">{t("product.category")}</th>
+                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden xl:table-cell">
+                      <div className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> Lagerort</div>
+                    </th>
+                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t("product.quantity")}</th>
+                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">{t("product.expiryDate")}</th>
+                    <th className="text-left px-3 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="text-center px-3 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aktionen</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {displayed.map((product) => {
+                    const category = typeof product.categoryId === "object" ? product.categoryId : null;
+                    const qty = product.quantity;
+                    const stockColor = qty === 0 ? "text-red-600 font-bold" : qty <= product.minQuantity ? "text-amber-600 font-semibold" : "text-gray-900";
+                    const locIcon = locations.find((l) => l.name === product.location)?.icon;
 
-                  return (
-                    <tr key={product._id} className="hover:bg-blue-50/30 transition-colors group">
-                      {/* Name + image */}
-                      <td className="px-5 py-3">
-                        <Link href={`/inventory/${product._id}`} className="flex items-center gap-3">
-                          {product.image ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={product.image} alt={product.name}
-                              className="w-10 h-10 rounded-lg object-contain bg-gray-50 border border-gray-100 p-0.5 flex-shrink-0"
-                              onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
-                          ) : (
-                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <Package className="h-5 w-5 text-gray-300" />
-                            </div>
-                          )}
-                          <span className="font-medium text-gray-900 hover:text-blue-600 transition-colors">{product.name}</span>
-                        </Link>
-                      </td>
-
-                      {/* Category */}
-                      <td className="px-5 py-3 text-gray-500 text-xs">{category?.name ?? "—"}</td>
-
-                      {/* Location */}
-                      <td className="px-5 py-3">
-                        {product.location ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium">
-                            {locIcon && <span>{locIcon}</span>}
-                            {product.location}
-                          </span>
-                        ) : (
-                          <span className="text-gray-300 text-xs">—</span>
-                        )}
-                      </td>
-
-                      {/* Quantity */}
-                      <td className={`px-5 py-3 ${stockColor}`}>
-                        <div className="flex items-center gap-1">
-                          <span className="text-base font-bold">{qty}</span>
-                          <span className="text-xs font-normal text-gray-400">{t(`unit.${product.unit}`)}</span>
-                        </div>
-                        <div className="w-16 h-1 bg-gray-100 rounded-full mt-1 overflow-hidden">
-                          <div className={`h-full rounded-full ${qty === 0 ? "bg-red-400" : qty <= product.minQuantity ? "bg-amber-400" : "bg-emerald-400"}`}
-                            style={{ width: `${product.minQuantity > 0 ? Math.min((qty / product.minQuantity) * 100, 100) : 100}%` }} />
-                        </div>
-                      </td>
-
-                      {/* Expiry */}
-                      <td className="px-5 py-3 text-gray-500 text-xs">
-                        {product.expiryDate ? new Date(product.expiryDate).toLocaleDateString("de-DE") : "—"}
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-5 py-3">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
-                          ${qty === 0 ? "bg-red-100 text-red-800 border-red-200"
-                            : qty <= product.minQuantity ? "bg-amber-100 text-amber-800 border-amber-200"
-                            : "bg-emerald-100 text-emerald-800 border-emerald-200"}`}>
-                          {qty === 0 ? t("status.out") : qty <= product.minQuantity ? t("status.low") : t("status.good")}
-                        </span>
-                      </td>
-
-                      {/* Actions */}
-                      <td className="px-5 py-3">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button onClick={(e) => openMovement(e, product, "IN")} title="Bestand erhöhen"
-                            className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-semibold transition-colors border border-emerald-200">
-                            <TrendingUp className="h-3.5 w-3.5" /> +
-                          </button>
-                          <button onClick={(e) => openMovement(e, product, "OUT")} title="Bestand verringern"
-                            className="flex items-center gap-1 px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-semibold transition-colors border border-red-200">
-                            <TrendingDown className="h-3.5 w-3.5" /> −
-                          </button>
-                          <button onClick={(e) => toggleShoppingList(e, product)}
-                            title={product.inShoppingList === true ? "Aus Einkaufsliste entfernen" : "Zur Einkaufsliste hinzufügen"}
-                            className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors border ${product.inShoppingList === true ? "bg-blue-100 border-blue-200 text-blue-600 hover:bg-blue-200" : "bg-gray-100 border-gray-200 text-gray-400 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200"}`}>
-                            <ShoppingCart className="h-3.5 w-3.5" />
-                          </button>
-                          <Link href={`/inventory/${product._id}`} onClick={(e) => e.stopPropagation()} title="Details"
-                            className="flex items-center justify-center w-8 h-8 bg-gray-100 hover:bg-blue-50 text-gray-400 hover:text-blue-600 rounded-lg transition-colors border border-gray-200">
-                            <Eye className="h-3.5 w-3.5" />
+                    return (
+                      <tr key={product._id} className="hover:bg-blue-50/30 transition-colors group">
+                        {/* Name + image */}
+                        <td className="px-4 py-3">
+                          <Link href={`/inventory/${product._id}`} className="flex items-center gap-3">
+                            {product.image ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={product.image} alt={product.name}
+                                className="w-9 h-9 rounded-lg object-contain bg-gray-50 border border-gray-100 p-0.5 flex-shrink-0"
+                                onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
+                            ) : (
+                              <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Package className="h-4 w-4 text-gray-300" />
+                              </div>
+                            )}
+                            <span className="font-medium text-gray-900 hover:text-blue-600 transition-colors truncate max-w-[140px] md:max-w-[180px]">{product.name}</span>
                           </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+
+                        {/* Category — hidden on md, visible lg+ */}
+                        <td className="px-3 py-3 text-gray-500 text-xs hidden lg:table-cell">{category?.name ?? "—"}</td>
+
+                        {/* Location — hidden on md/lg, visible xl+ */}
+                        <td className="px-3 py-3 hidden xl:table-cell">
+                          {product.location ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium">
+                              {locIcon && <span>{locIcon}</span>}
+                              {product.location}
+                            </span>
+                          ) : (
+                            <span className="text-gray-300 text-xs">—</span>
+                          )}
+                        </td>
+
+                        {/* Quantity */}
+                        <td className={`px-3 py-3 ${stockColor}`}>
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm font-bold">{qty}</span>
+                            <span className="text-xs font-normal text-gray-400">{t(`unit.${product.unit}`)}</span>
+                          </div>
+                          <div className="w-14 h-1 bg-gray-100 rounded-full mt-1 overflow-hidden">
+                            <div className={`h-full rounded-full ${qty === 0 ? "bg-red-400" : qty <= product.minQuantity ? "bg-amber-400" : "bg-emerald-400"}`}
+                              style={{ width: `${product.minQuantity > 0 ? Math.min((qty / product.minQuantity) * 100, 100) : 100}%` }} />
+                          </div>
+                        </td>
+
+                        {/* Expiry — hidden on md, visible lg+ */}
+                        <td className="px-3 py-3 text-gray-500 text-xs hidden lg:table-cell">
+                          {product.expiryDate ? new Date(product.expiryDate).toLocaleDateString("de-DE") : "—"}
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-3 py-3">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border
+                            ${qty === 0 ? "bg-red-100 text-red-800 border-red-200"
+                              : qty <= product.minQuantity ? "bg-amber-100 text-amber-800 border-amber-200"
+                              : "bg-emerald-100 text-emerald-800 border-emerald-200"}`}>
+                            {qty === 0 ? t("status.out") : qty <= product.minQuantity ? t("status.low") : t("status.good")}
+                          </span>
+                        </td>
+
+                        {/* Actions — icon-only buttons, always visible */}
+                        <td className="px-3 py-3">
+                          <div className="flex items-center justify-center gap-1">
+                            <button onClick={(e) => openMovement(e, product, "IN")} title="Bestand erhöhen"
+                              className="flex items-center justify-center w-8 h-8 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors border border-emerald-200">
+                              <TrendingUp className="h-3.5 w-3.5" />
+                            </button>
+                            <button onClick={(e) => openMovement(e, product, "OUT")} title="Bestand verringern"
+                              className="flex items-center justify-center w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors border border-red-200">
+                              <TrendingDown className="h-3.5 w-3.5" />
+                            </button>
+                            <button onClick={(e) => toggleShoppingList(e, product)}
+                              title={product.inShoppingList === true ? "Aus Einkaufsliste entfernen" : "Zur Einkaufsliste hinzufügen"}
+                              className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors border ${product.inShoppingList === true ? "bg-blue-100 border-blue-200 text-blue-600 hover:bg-blue-200" : "bg-gray-100 border-gray-200 text-gray-400 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200"}`}>
+                              <ShoppingCart className="h-3.5 w-3.5" />
+                            </button>
+                            <Link href={`/inventory/${product._id}`} onClick={(e) => e.stopPropagation()} title="Details"
+                              className="flex items-center justify-center w-8 h-8 bg-gray-100 hover:bg-blue-50 text-gray-400 hover:text-blue-600 rounded-lg transition-colors border border-gray-200">
+                              <Eye className="h-3.5 w-3.5" />
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* ── Mobile cards ── */}
-          <div className="md:hidden grid grid-cols-1 gap-3">
+          <div className="md:hidden space-y-3">
             {displayed.map((product) => {
               const locIcon = locations.find((l) => l.name === product.location)?.icon;
+              const qty = product.quantity;
+              const isOut = qty === 0;
+              const isLow = !isOut && qty <= product.minQuantity;
+              const isGood = !isOut && !isLow;
+              const category = typeof product.categoryId === "object" ? product.categoryId : null;
+              const stockPct = product.minQuantity > 0 ? Math.min((qty / product.minQuantity) * 100, 100) : 100;
+
               return (
-                <div key={product._id}>
-                  <div className="relative">
-                    <ProductCard product={product} />
-                    {/* Location badge overlay */}
-                    {product.location && (
-                      <div className="absolute top-3 right-3">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/90 border border-gray-200 text-gray-600 rounded-lg text-xs font-medium shadow-sm">
-                          {locIcon && <span>{locIcon}</span>}
-                          {product.location}
-                        </span>
+                <div key={product._id}
+                  className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${isOut ? "border-red-200" : isLow ? "border-amber-200" : "border-gray-200"}`}>
+                  {/* Top: image + info */}
+                  <Link href={`/inventory/${product._id}`} className="flex items-center gap-3 p-4 active:bg-gray-50 transition-colors">
+                    {/* Image */}
+                    {product.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={product.image} alt={product.name}
+                        className="w-16 h-16 rounded-xl object-contain bg-gray-50 border border-gray-100 p-0.5 flex-shrink-0"
+                        onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
+                    ) : (
+                      <div className={`w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 ${isOut ? "bg-red-50" : isLow ? "bg-amber-50" : "bg-gray-50"}`}>
+                        <Package className={`h-8 w-8 ${isOut ? "text-red-200" : isLow ? "text-amber-200" : "text-gray-200"}`} />
                       </div>
                     )}
-                  </div>
-                  <div className="flex gap-2 mt-1.5 px-1">
+
+                    <div className="flex-1 min-w-0">
+                      {/* Name + status pill */}
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <p className="font-bold text-gray-900 truncate text-sm leading-tight">{product.name}</p>
+                        <span className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${isOut ? "bg-red-100 text-red-700" : isLow ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}`}>
+                          {isOut ? "Aus" : isLow ? "Niedrig" : "OK"}
+                        </span>
+                      </div>
+
+                      {/* Category + location */}
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        {category && (
+                          <span className="text-[11px] text-gray-400 font-medium">{category.name}</span>
+                        )}
+                        {product.location && (
+                          <span className="inline-flex items-center gap-0.5 text-[11px] text-gray-400">
+                            {locIcon && <span className="text-xs">{locIcon}</span>}
+                            {product.location}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Quantity + stock bar */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full transition-all ${isOut ? "bg-red-400 w-[4px]" : isLow ? "bg-amber-400" : "bg-emerald-400"}`}
+                            style={!isOut ? { width: `${stockPct}%` } : undefined} />
+                        </div>
+                        <span className={`text-xs font-bold tabular-nums ${isOut ? "text-red-600" : isLow ? "text-amber-600" : "text-gray-700"}`}>
+                          {qty} <span className="font-normal text-gray-400">/ {product.minQuantity} {t(`unit.${product.unit}`)}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+
+                  {/* Bottom action bar */}
+                  <div className={`flex border-t ${isOut ? "border-red-100" : isLow ? "border-amber-100" : "border-gray-100"}`}>
                     <button onClick={(e) => openMovement(e, product, "IN")}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl text-xs font-semibold border border-emerald-200 transition-colors">
-                      <TrendingUp className="h-4 w-4" /> Eingang
+                      className="flex-1 flex items-center justify-center gap-1.5 py-3 text-emerald-700 hover:bg-emerald-50 text-xs font-bold transition-colors border-r border-gray-100">
+                      <TrendingUp className="h-4 w-4" /> +
                     </button>
                     <button onClick={(e) => openMovement(e, product, "OUT")}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-semibold border border-red-200 transition-colors">
-                      <TrendingDown className="h-4 w-4" /> Ausgang
+                      className="flex-1 flex items-center justify-center gap-1.5 py-3 text-red-500 hover:bg-red-50 text-xs font-bold transition-colors border-r border-gray-100">
+                      <TrendingDown className="h-4 w-4" /> −
                     </button>
                     <button onClick={(e) => toggleShoppingList(e, product)}
-                      title={product.inShoppingList === true ? "Aus Liste entfernen" : "Zur Liste"}
-                      className={`flex items-center justify-center px-3 py-2 rounded-xl text-xs font-semibold border transition-colors ${product.inShoppingList === true ? "bg-blue-100 border-blue-200 text-blue-600" : "bg-gray-100 border-gray-200 text-gray-400"}`}>
+                      title={product.inShoppingList === true ? "Aus Liste entfernen" : "Zur Einkaufsliste"}
+                      className={`flex items-center justify-center w-14 py-3 text-xs font-bold transition-colors ${product.inShoppingList === true ? "text-blue-600 bg-blue-50" : "text-gray-400 hover:text-blue-500 hover:bg-blue-50"}`}>
                       <ShoppingCart className="h-4 w-4" />
                     </button>
+                    <Link href={`/inventory/${product._id}`} onClick={(e) => e.stopPropagation()}
+                      className="flex items-center justify-center w-14 py-3 text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-colors border-l border-gray-100">
+                      <Eye className="h-4 w-4" />
+                    </Link>
                   </div>
                 </div>
               );
